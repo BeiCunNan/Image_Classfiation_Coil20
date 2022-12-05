@@ -13,13 +13,13 @@ def get_config():
 
     '''Base'''
     parser.add_argument('--num_classes', type=int, default=20)
-    parser.add_argument('--model_name', type=str, default='LeNet',
+    parser.add_argument('--model_name', type=str, default='GoogleNet',
                         choices=['LeNet', 'AlexNet', 'GoogleNet', 'VGG16', 'ResNet50', 'EfficientNet'])
 
     '''Optimization'''
-    parser.add_argument('--train_batch_size', type=int, default=4)
-    parser.add_argument('--test_batch_size', type=int, default=4)
-    parser.add_argument('--num_epoch', type=int, default=50)
+    parser.add_argument('--train_batch_size', type=int, default=32)
+    parser.add_argument('--test_batch_size', type=int, default=32)
+    parser.add_argument('--num_epoch', type=int, default=10)
     parser.add_argument('--lr', type=float, default=1e-5)
     parser.add_argument('--weight_decay', type=float, default=0.01)
 

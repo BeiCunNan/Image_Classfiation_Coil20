@@ -6,27 +6,35 @@ import torch.nn.functional as F
 class LeNet(torch.nn.Module):
     def __init__(self):
         super(LeNet, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(1, 6, 5),
+        self.convs = nn.Sequential(
+            nn.Conv2d(1, 10, 10, 2),
             nn.Sigmoid(),
             nn.MaxPool2d(2, 2),
 
-            nn.Conv2d(6, 16, 5),
+            nn.Conv2d(10, 20, 5),
             nn.Sigmoid(),
-            nn.MaxPool2d(2, 2)
+            nn.MaxPool2d(2, 2),
+
+            nn.Conv2d(20, 20, 3),
+            nn.Sigmoid(),
+            nn.MaxPool2d(2, 2),
+
+            nn.Conv2d(20, 20, 3, 1, 1),
+            nn.Sigmoid(),
         )
 
         self.fc = nn.Sequential(
-            nn.Linear(16 * 4 * 4, 120),
+            nn.Dropout(0.5),
+            nn.Linear(5 * 5 * 20, 100),
             nn.Sigmoid(),
-            nn.Linear(120, 84),
+            nn.Linear(100, 60),
             nn.Sigmoid(),
-            nn.Linear(84, 20)
+            nn.Linear(60, 20)
         )
 
     def forward(self, x):
-        batch_size = x.size(0)  # Get the batch_size
-        x = self.conv(x)
+        batch_size = x.size(0)
+        x = self.convs(x)
         x = x.view(batch_size, -1)
         x = self.fc(x)
         return x
@@ -35,21 +43,40 @@ class LeNet(torch.nn.Module):
 class AlexNet(torch.nn.Module):
     def __init__(self):
         super(AlexNet, self).__init__()
-        self.conv1 = torch.nn.Conv2d(1, 10, kernel_size=5, stride=(1, 1))
-        self.conv2 = torch.nn.Conv2d(10, 20, kernel_size=3, stride=(1, 1))
-        self.conv3 = torch.nn.Conv2d(20, 40, kernel_size=2, stride=(1, 1))
-        self.pooling = torch.nn.MaxPool2d(2)
-        self.fc1 = torch.nn.Linear(640, 160)
-        self.fc2 = torch.nn.Linear(160, 20)
+        self.convs = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=96, kernel_size=20, stride=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=0),
+
+            nn.Conv2d(in_channels=96, out_channels=256, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+
+            nn.Conv2d(in_channels=256, out_channels=384, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(in_channels=384, out_channels=384, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(in_channels=384, out_channels=256, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=0)
+        )
+        self.fc = nn.Sequential(
+            nn.Dropout(0.5),
+            nn.Linear(in_features=256 * 6 * 6, out_features=4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(in_features=4096, out_features=4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_features=4096, out_features=20)
+        )
 
     def forward(self, x):
         batch_size = x.size(0)
-        x = F.relu(self.pooling(self.conv1(x)))  # conv1+pooling
-        x = F.relu(self.pooling(self.conv2(x)))  # conv2+pooling
-        x = F.relu(self.conv3(x))
-        x = x.view(batch_size, -1)  # flatten
-        x = self.fc1(x)  # FNN
-        x = self.fc2(x)
+        x = self.convs(x)
+        x = x.view(batch_size, -1)
+        x = self.fc(x)
         return x
 
 
@@ -88,7 +115,7 @@ class GoogleNet(nn.Module):
     def __init__(self):
         super(GoogleNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-        self.conv2 = nn.Conv2d(88, 20, kernel_size=5)  # 88 = 24x3 + 16
+        self.conv2 = nn.Conv2d(88, 20, kernel_size=5)
 
         self.incep1 = InceptionA(in_channels=10)  # 与conv1 中的10对应
         self.incep2 = InceptionA(in_channels=20)  # 与conv2 中的20对应
@@ -112,60 +139,101 @@ class VGG16(torch.nn.Module):
     def __init__(self):
         super(VGG16, self).__init__()
         self.block1 = nn.Sequential(
-            nn.Conv2d(1, 64, 3),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, 3),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2)
+            nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1),  # (32-3+2)/1+1=32   32*32*64
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=17)
         )
         self.block2 = nn.Sequential(
-            nn.Conv2d(64, 128, 3),
-            nn.ReLU(),
-            nn.Conv2d(128, 128, 3),
-            nn.ReLU(),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+
             nn.MaxPool2d(2, 2)
         )
         self.block3 = nn.Sequential(
-            nn.Conv2d(128, 256, 2),
-            nn.ReLU(),
-            nn.Conv2d(256, 256, 2),
-            nn.ReLU(),
-            nn.Conv2d(256, 256, 2),
-            nn.ReLU(),
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),  # (8-3+2)/1+1=8   8*8*256
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),  # (8-3+2)/1+1=8   8*8*256
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),  # (8-3+2)/1+1=8   8*8*256
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2)
         )
         self.block4 = nn.Sequential(
-            nn.Conv2d(256, 512, 2),
-            nn.ReLU(),
-            nn.Conv2d(512, 512, 2),
-            nn.ReLU(),
-            nn.Conv2d(512, 512, 2),
-            nn.ReLU(),
+            nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2)
         )
         self.block5 = nn.Sequential(
-            nn.Conv2d(512, 512, 1),
-            nn.ReLU(),
-            nn.Conv2d(512, 512, 1),
-            nn.ReLU(),
-            nn.Conv2d(512, 512, 1),
-            nn.ReLU(),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2)
+        )
+        self.convs = nn.Sequential(
+            self.block1,
+            self.block2,
+            self.block3,
+            self.block4,
+            self.block5
         )
         self.fnn = nn.Sequential(
-            nn.Linear(512, 512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 20)
+            nn.Dropout(0.5),
+            nn.Linear(25088, 4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, 1000),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, 256),
+            nn.Linear(256, 20),
         )
 
     def forward(self, x):
         batch_size = x.size(0)
-        x = self.block1(x)
-        x = self.block2(x)
-        x = self.block3(x)
-        x = self.block4(x)
-        x = self.block5(x)
+        x = self.convs(x),
+        x = x[0]
         x = x.view(batch_size, -1)
         x = self.fnn(x)
+        return x
+
+
+class ResNet50(torch.nn.Module):
+    def __init__(self):
+        super(ResNet50, self).__init__()
+
+    def forward(self, x):
+        return x
+
+
+class EfficientNet(torch.nn.Module):
+    def __init__(self):
+        super(EfficientNet, self).__init__()
+
+    def forward(self, x):
         return x

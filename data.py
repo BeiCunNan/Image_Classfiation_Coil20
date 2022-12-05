@@ -37,7 +37,7 @@ def load_dataset(self):
         labels.extend([i] * 72)
     tr_imgs, te_imgs, tr_labs, te_labs = train_test_split(data, labels, train_size=0.9)
     transform = transforms.Compose([
-        transforms.Resize((28, 28)),
+        transforms.Resize((128, 128)),
         transforms.ToTensor()
     ])
     tr_set = Mydataset(tr_imgs, tr_labs, transform)

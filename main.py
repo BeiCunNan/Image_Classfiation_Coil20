@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 from transformers import logging, AutoTokenizer, AutoModel
 
-from torchvision import models
 from config import get_config
 from data import load_dataset
 from model import AlexNet, LeNet, GoogleNet, VGG16
@@ -20,7 +19,7 @@ class Niubility:
             self.Mymodel = AlexNet()
         elif args.model_name == 'LeNet':
             self.Mymodel = LeNet()
-        elif args.model_name =='GoogleNet':
+        elif args.model_name == 'GoogleNet':
             self.Mymodel = GoogleNet()
         elif args.model_name == 'VGG16':
             self.Mymodel = VGG16()
@@ -51,6 +50,8 @@ class Niubility:
             optimizer.step()
 
             train_loss += loss.item() * targets.size(0)
+            # Show the result of predicts
+            # print(torch.argmax(predicts, dim=1))
             n_correct += (torch.argmax(predicts, dim=1) == targets).sum().item()
             n_train += targets.size(0)
 
@@ -75,8 +76,8 @@ class Niubility:
 
     def run(self):
         # Print the parameters of model
-        for name, layer in self.Mymodel.named_parameters(recurse=True):
-            print(name, layer.shape, sep=" ")
+        # for name, layer in self.Mymodel.named_parameters(recurse=True):
+        #     print(name, layer.shape, sep=" ")
 
         train_dataloader, test_dataloader = load_dataset(self)
         _params = filter(lambda x: x.requires_grad, self.Mymodel.parameters())
