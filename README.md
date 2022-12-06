@@ -9,6 +9,7 @@ The dataset we have put on Github, which has a total of 20 objects, each with 72
 
 Here I show you some of the data.
 
+![Snipaste_2022-12-06_11-10-20](https://user-images.githubusercontent.com/105692522/205828070-c11f41a5-356d-4f22-8445-20cc115214ad.jpg)
 
 
 ### Result
@@ -33,7 +34,7 @@ We scramble the data first, and the divide the training and test sets by 9:1. Th
 ### Clone
 
 ```shell
-git clone 
+git clone https://github.com/BeiCunNan/Coil20_Image_Classfiation.git
 ```
 
 ### Create an anaconda environment
