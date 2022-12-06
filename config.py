@@ -19,8 +19,8 @@ def get_config():
     '''Optimization'''
     parser.add_argument('--train_batch_size', type=int, default=32)
     parser.add_argument('--test_batch_size', type=int, default=32)
-    parser.add_argument('--num_epoch', type=int, default=100)
-    parser.add_argument('--lr', type=float, default=1e-5)
+    parser.add_argument('--num_epoch', type=int, default=10)
+    parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--weight_decay', type=float, default=0.01)
 
     '''Environment'''
@@ -28,6 +28,7 @@ def get_config():
     parser.add_argument('--backend', default=False, action='store_true')
     parser.add_argument('--workers', type=int, default=0)
     parser.add_argument('--timestamp', type=int, default='{:.0f}{:03}'.format(time.time(), random.randint(0, 999)))
+    parser.add_argument('--index', type=int, default=0)
 
     args = parser.parse_args()
     args.device = torch.device(args.device)
