@@ -1,0 +1,8 @@
+Python = 3.9
+torch = 1.11.0
+numpy = 1.22.3
+transformers=4.19.2
+tqdm=4.64.0
+matplotlib=3.5.3
+pillow=9.1.0
+scikit-learn=1.1.1
