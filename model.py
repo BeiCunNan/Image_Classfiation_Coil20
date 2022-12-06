@@ -210,7 +210,7 @@ class VGG16(torch.nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(4096, 1000),
             nn.ReLU(inplace=True),
-            nn.Linear(4096, 256),
+            nn.Linear(1000, 256),
             nn.Linear(256, 20),
         )
 

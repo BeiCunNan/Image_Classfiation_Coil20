@@ -104,13 +104,13 @@ class Niubility:
         plt.plot(l_epo, l_acc)
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
-        plt.savefig('./result/acc.png')
+        plt.savefig('./result/'+self.args.model_name+'acc.png')
 
         plt.figure(2)
         plt.plot(l_epo, l_trloss)
         plt.ylabel('train-loss')
         plt.xlabel('epoch')
-        plt.savefig('./result/trloss.png')
+        plt.savefig('./result/'+self.args.model_name+'trloss.png')
 
 
 if __name__ == '__main__':

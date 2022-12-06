@@ -1,10 +1,7 @@
 import glob
-import torch
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
-import numpy as np
 from torchvision import transforms
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 
