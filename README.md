@@ -20,14 +20,14 @@ We scramble the data first, and the divide the training and test sets by 9:1. Th
 
 ## Requirement
 
-- Python = 3.9
-- torch = 1.11.0
-- numpy = 1.22.3
-- transformers=4.19.2
-- tqdm=4.64.0
-- matplotlib=3.5.3
-- pillow=9.1.0
-- scikit-learn=1.1.1
+- Python==3.9
+- torch==1.11.0
+- numpy==1.22.3
+- transformers==4.19.2
+- tqdm==4.64.0
+- matplotlib==3.5.3
+- pillow==9.1.0
+- scikit-learn==1.1.1
 
 ## Preparation
 
@@ -40,7 +40,7 @@ git clone https://github.com/BeiCunNan/Coil20_Image_Classfiation.git
 ### Create an anaconda environment
 
 ```shell
-conda create -n cic pyhton=3.9
+conda create -n cic python=3.9
 conda activate cic
 pip install -r requirements.txt
 ```
