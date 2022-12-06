@@ -6,7 +6,7 @@ from transformers import logging, AutoTokenizer, AutoModel
 
 from config import get_config
 from data import load_dataset
-from model import AlexNet, LeNet, GoogleNet, VGG16
+from model import AlexNet, LeNet, GoogleNet, VGG16, ResNet50
 
 INDEX = 0
 
@@ -25,6 +25,9 @@ class Niubility:
             self.Mymodel = GoogleNet()
         elif args.model_name == 'VGG16':
             self.Mymodel = VGG16()
+        elif args.model_name == 'ResNet50':
+            self.Mymodel = ResNet50()
+
         else:
             raise ValueError('unknown method')
 
@@ -53,7 +56,7 @@ class Niubility:
             optimizer.step()
             # You can check the predicts for the last epoch
             if (self.args.index > 9):
-                print(torch.argmax(predicts, dim=1))
+                 print(torch.argmax(predicts, dim=1))
 
             train_loss += loss.item() * targets.size(0)
             n_correct += (torch.argmax(predicts, dim=1) == targets).sum().item()

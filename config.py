@@ -13,7 +13,7 @@ def get_config():
 
     '''Base'''
     parser.add_argument('--num_classes', type=int, default=20)
-    parser.add_argument('--model_name', type=str, default='VGG16',
+    parser.add_argument('--model_name', type=str, default='ResNet50',
                         choices=['LeNet', 'AlexNet', 'GoogleNet', 'VGG16', 'ResNet50', 'EfficientNet'])
 
     '''Optimization'''
