@@ -54,8 +54,8 @@ class Niubility:
             loss.backward()
             optimizer.step()
             # You can check the predicts for the last epoch
-            if (self.args.index > 49):
-                print(torch.argmax(predicts, dim=1))
+            # if (self.args.index > 49):
+            #     print(torch.argmax(predicts, dim=1))
 
             train_loss += loss.item() * targets.size(0)
             n_correct += (torch.argmax(predicts, dim=1) == targets).sum().item()
