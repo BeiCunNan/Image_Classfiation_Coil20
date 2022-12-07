@@ -27,7 +27,6 @@ class Niubility:
             self.Mymodel = VGG16()
         elif args.model_name == 'ResNet50':
             self.Mymodel = ResNet50()
-
         else:
             raise ValueError('unknown method')
 
