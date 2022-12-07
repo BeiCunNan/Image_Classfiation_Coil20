@@ -15,6 +15,7 @@ Here I show you some of the data.
 ### Result
 
 We scramble the data first, and the divide the training and test sets by 9:1. The results are as follwos
+![COIL20](https://user-images.githubusercontent.com/105692522/206123347-1c08552d-a69d-4440-8654-3c582cfc0891.jpg)
 
 
 
