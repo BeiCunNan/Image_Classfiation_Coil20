@@ -111,108 +111,6 @@ class InceptionA(nn.Module):
         return torch.cat(outputs, dim=1)  # b,c,w,h  c对应的是dim=1
 
 
-class GoogleNet(nn.Module):
-    def __init__(self, num_classes=20, aux_logits=True, init_weights=True):
-        super(GoogleNet, self).__init__()
-        self.aux_logits = aux_logits
-
-        # todo
-        self.conv1 = BasicConv2d(1, 64, kernel_size=7, stride=2, padding=3)
-        self.maxpool1 = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
-        self.conv2 = BasicConv2d(64, 64, kernel_size=1)
-        self.conv3 = BasicConv2d(64, 192, kernel_size=3, padding=1)
-        self.maxpool2 = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
-
-        self.inception3a = Inception(192, 64, 96, 128, 16, 32, 32)
-        self.inception3b = Inception(256, 128, 128, 192, 32, 96, 64)
-        self.maxpool3 = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
-
-        self.inception4a = Inception(480, 192, 96, 208, 16, 48, 64)
-        self.inception4b = Inception(512, 160, 112, 224, 24, 64, 64)
-        self.inception4c = Inception(512, 128, 128, 256, 24, 64, 64)
-        self.inception4d = Inception(512, 112, 144, 288, 32, 64, 64)
-        self.inception4e = Inception(528, 256, 160, 320, 32, 128, 128)
-        self.maxpool4 = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
-
-        self.inception5a = Inception(832, 256, 160, 320, 32, 128, 128)
-        self.inception5b = Inception(832, 384, 192, 384, 48, 128, 128)
-
-        if self.aux_logits:
-            self.aux1 = InceptionAux(512, num_classes)
-            self.aux2 = InceptionAux(528, num_classes)
-
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.dropout = nn.Dropout(0.4)
-        self.fc = nn.Linear(1024, num_classes)
-        if init_weights:
-            self._initialize_weights()
-
-    def forward(self, x):
-        # todo
-        # N x 1 x 128 x 128
-        # N x 3 x 224 x 224
-        x = self.conv1(x)
-        # N x 64 x 112 x 112
-        x = self.maxpool1(x)
-        # N x 64 x 56 x 56
-        x = self.conv2(x)
-        # N x 64 x 56 x 56
-        x = self.conv3(x)
-        # N x 192 x 56 x 56
-        x = self.maxpool2(x)
-
-        # N x 192 x 28 x 28
-        x = self.inception3a(x)
-        # N x 256 x 28 x 28
-        x = self.inception3b(x)
-        # N x 480 x 28 x 28
-        x = self.maxpool3(x)
-        # N x 480 x 14 x 14
-        x = self.inception4a(x)
-        # N x 512 x 14 x 14
-        if self.training and self.aux_logits:
-            aux1 = self.aux1(x)
-
-        x = self.inception4b(x)
-        # N x 512 x 14 x 14
-        x = self.inception4c(x)
-        # N x 512 x 14 x 14
-        x = self.inception4d(x)
-        # N x 528 x 14 x 14
-        if self.training and self.aux_logits:
-            aux2 = self.aux1(x)
-
-        x = self.inception4e(x)
-        # N x 832 x 14 x 14
-        x = self.maxpool4(x)
-        # N x 832 x 7 x 7
-        x = self.inception5a(x)
-        # N x 832 x 7 x 7
-        x = self.inception5b(x)
-        # N x 1024 x 7 x 7
-
-        x = self.avgpool(x)
-        # N x 1024 x 1 x 1
-        x = torch.flatten(x, 1)
-        # N x 1024
-        x = self.dropout(x)
-        x = self.fc(x)
-        # N x num_classes
-        if self.training and self.aux_logits:
-            return x, aux2, aux1
-        return x
-
-    def _initialize_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, 0, 0.01)
-                nn.init.constant_(m.bias, 0)
-
-
 class VGG16(torch.nn.Module):
     def __init__(self):
         super(VGG16, self).__init__()
@@ -343,8 +241,8 @@ class ResNet50(nn.Module):
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 64, kernel_size=17),
             nn.BatchNorm2d(64),
-            nn.MaxPool2d(2,2)
-        ) # --> 3,4,3,6
+            nn.MaxPool2d(2, 2)
+        )  # --> 3,4,3,6
         self.conv2 = self._make_layer(Bottleneck, [[1, 1, 1]] * 3, [[0, 1, 0]] * 3, 64)
         self.conv3 = self._make_layer(Bottleneck, [[1, 2, 1]] + [[1, 1, 1]] * 3, [[0, 1, 0]] * 4, 128)
         self.conv4 = self._make_layer(Bottleneck, [[1, 2, 1]] + [[1, 1, 1]] * 5, [[0, 1, 0]] * 6, 256)
@@ -423,32 +321,6 @@ class Inception(nn.Module):
         return torch.cat(outputs, 1)
 
 
-class InceptionAux(nn.Module):
-    def __init__(self, in_channels, num_classes):
-        super(InceptionAux, self).__init__()
-        self.averagePool = nn.AvgPool2d(kernel_size=5, stride=3)
-        self.conv = BasicConv2d(in_channels, 128, kernel_size=1)
-
-        self.fc1 = nn.Linear(2048, 1024)
-        self.fc2 = nn.Linear(1024, num_classes)
-
-    def forward(self, x):
-        # aux1: N x 512 x 14 x 14, aux2: N x 528 x 14 x 14
-        x = self.averagePool(x)
-        # aux1: N x 512 x 4 x 4, aux2: N x 528 x 4 x 4
-        x = self.conv(x)
-        # N x 128 x 4 x 4
-        x = torch.flatten(x, 1)
-        x = F.dropout(x, 0.5, training=self.training)
-        # N x 2048
-        x = F.relu(self.fc1(x), inplace=True)
-        x = F.dropout(x, 0.5, training=self.training)
-        # N x 1024
-        x = self.fc2(x)
-        # N x num_classes
-        return x
-
-
 class BasicConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
         super(BasicConv2d, self).__init__()
@@ -458,4 +330,47 @@ class BasicConv2d(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         x = self.relu(x)
+        return x
+
+
+class GoogleNet(nn.Module):
+    def __init__(self):
+        super(GoogleNet, self).__init__()
+        self.inputs = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=64, kernel_size=17),
+                                    nn.ReLU(),
+                                    nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+                                    nn.Conv2d(64, 64, kernel_size=1),
+                                    nn.Conv2d(64, 192, kernel_size=3, padding=1),
+                                    nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
+        self.block1 = nn.Sequential(
+            Inception(192, 64, 96, 128, 16, 32, 32),
+            Inception(256, 128, 128, 192, 32, 96, 64),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        )
+        self.block2 = nn.Sequential(Inception(480, 192, 96, 208, 16, 48, 64),
+                                    Inception(512, 160, 112, 224, 24, 64, 64),
+                                    Inception(512, 128, 128, 256, 24, 64, 64),
+                                    Inception(512, 112, 144, 288, 32, 64, 64),
+                                    Inception(528, 256, 160, 320, 32, 128, 128),
+                                    nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+                                    )
+        self.block3 = nn.Sequential(
+            Inception(832, 256, 160, 320, 32, 128, 128),
+            Inception(832, 384, 192, 384, 48, 128, 128),
+        )
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.outputs = nn.Sequential(
+            nn.Dropout(0.5),
+            nn.Linear(1024, 20)
+        )
+
+    def forward(self, x):
+        batch_size = x.size(0)
+        x = self.inputs(x)
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+        x = self.avgpool(x)
+        x = x.view(batch_size, -1)
+        x = self.outputs(x)
         return x
